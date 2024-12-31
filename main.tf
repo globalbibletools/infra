@@ -32,3 +32,7 @@ data "aws_iam_policy_document" "lambda_assume_role" {
     actions = ["sts:AssumeRole"]
   }
 }
+
+resource "aws_route53_zone" "main" {
+  name = var.domain
+}
