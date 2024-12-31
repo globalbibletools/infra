@@ -72,7 +72,7 @@ resource "aws_lambda_function" "import" {
 
   environment {
       variables = {
-          DATABASE_URL = var.database_url
+          DATABASE_URL = local.database_url
       }
   }
 }

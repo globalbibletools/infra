@@ -1,18 +1,3 @@
-variable "db_master_password" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_master_username" {
-  type    = string
-  default = "postgres"
-}
-
-variable "db_identifier" {
-    type = string
-    default = "prod"
-}
-
 data "aws_rds_engine_version" "postgres" {
   engine = "postgres"
   parameter_group_family = "postgres14"
@@ -84,3 +69,44 @@ resource "aws_iam_role_policy_attachment" "rds" {
   policy_arn = "arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy"
 }
 
+provider "postgresql" {
+  host            = aws_db_instance.default.address
+  port            = aws_db_instance.default.port
+  database        = "postgres"
+  username        = var.db_master_username
+  password        = var.db_master_password
+  sslmode         = "require"
+  connect_timeout = 15
+  superuser       = false
+}
+
+resource "postgresql_database" "prod" {
+  name = "prod"
+}
+
+import {
+    to = postgresql_database.prod
+    id = "prod"
+}
+
+resource "postgresql_role" "app" {
+  login    = true
+  name     = var.db_app_username
+  password = var.db_app_password
+}
+import {
+    to = postgresql_role.app
+    id = var.db_app_username
+}
+
+resource "postgresql_grant" "create" {
+  database    = postgresql_database.prod.name
+  role        = postgresql_role.app.name
+  schema      = "public"
+  object_type = "database"
+  privileges  = ["CREATE"]
+}
+
+locals {
+    database_url = "postgresql://${postgresql_role.app.name}:${postgresql_role.app.password}@${aws_db_instance.default.address}:${aws_db_instance.default.port}/${postgresql_database.prod.name}"
+}

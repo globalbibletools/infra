@@ -106,7 +106,7 @@ resource "aws_lambda_function" "github_import" {
 
   environment {
       variables = {
-          DATABASE_URL = var.database_url
+          DATABASE_URL = local.database_url
           GITHUB_EXPORT_QUEUE_URL = aws_sqs_queue.github_export.url
           GITHUB_TOKEN = var.github_token
       }
