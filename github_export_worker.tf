@@ -10,18 +10,6 @@ resource "aws_cloudwatch_log_group" "github_export_lambda" {
   name = "/aws/lambda/github_export"
 }
 
-data "aws_iam_policy_document" "lambda_assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["lambda.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
 resource "aws_iam_role" "github_export_lambda" {
   name               = "github_export_lambda_role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
