@@ -52,3 +52,13 @@ variable "bounce_subscription_url" {
     type = string
     default = "https://globalbibletools.com/email/notifications"
 }
+
+variable "google_translate_credentials" {
+    type = string
+    sensitive = true
+}
+
+variable "api_user" {
+  type        = string
+  default     = "app-prod"
+}
