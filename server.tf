@@ -24,8 +24,25 @@ resource "aws_iam_role_policy_attachment" "app_runner_ecr_access" {
   role       = aws_iam_role.app_runner_ecr.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
 }
-resource "aws_iam_role_policy_attachment" "app_runner_xray" {
-  role       = aws_iam_role.app_runner_ecr.name
+
+data "aws_iam_policy_document" "apprunner_tasks_assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["tasks.apprunner.amazonaws.com"]
+    }
+  }
+}
+resource "aws_iam_role" "apprunner_tasks" {
+  name               = "apprunner"
+  assume_role_policy = data.aws_iam_policy_document.apprunner_tasks_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "apprunner_task_xray" {
+  role       = aws_iam_role.apprunner_tasks.name
   policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 
@@ -36,17 +53,22 @@ resource "aws_iam_access_key" "app_prod" {
   user = aws_iam_user.app_prod.name
 }
 
-import {
-    to = aws_iam_user.app_prod
-    id = "app-prod"
-}
-import {
-    to = aws_iam_access_key.app_prod
-    id = "AKIASXVCKUDQOOOLDSVC"
+resource "aws_apprunner_auto_scaling_configuration_version" "server" {
+  auto_scaling_configuration_name = "server-configuration"
+
+  max_concurrency = 100
+  max_size        = 1
+  min_size        = 1
 }
 
 resource "aws_apprunner_service" "server" {
   service_name = "Platform"
+
+  auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.server.arn
+
+  instance_configuration {
+     instance_role_arn = aws_iam_role.apprunner_tasks.arn
+  }
 
   source_configuration {
     authentication_configuration {
@@ -78,7 +100,23 @@ resource "aws_apprunner_service" "server" {
     observability_enabled           = true
   }
 }
+
+resource "aws_cloudwatch_log_group" "server_application" {
+  name = "/aws/apprunner/Platform/${aws_apprunner_service.server.service_id}/application"
+
+  depends_on = [aws_apprunner_service.server]
+}
 import {
-  to = aws_apprunner_service.server
-  id = "arn:aws:apprunner:us-east-1:188245254368:service/Platform/47c5921841eb4744b6b4ecb916a6c549"
+    to = aws_cloudwatch_log_group.server_application
+    id = "/aws/apprunner/Platform/${aws_apprunner_service.server.service_id}/application"
+}
+
+resource "aws_cloudwatch_log_group" "server_service" {
+  name = "/aws/apprunner/Platform/${aws_apprunner_service.server.service_id}/service"
+
+  depends_on = [aws_apprunner_service.server]
+}
+import {
+    to = aws_cloudwatch_log_group.server_service
+    id = "/aws/apprunner/Platform/${aws_apprunner_service.server.service_id}/service"
 }

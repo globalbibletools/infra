@@ -45,30 +45,6 @@ resource "aws_cloudwatch_log_group" "postgres" {
   name = "/aws/rds/instance/${var.db_identifier}/postgresql"
 }
 
-data "aws_iam_policy_document" "rds_assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["rds.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-resource "aws_iam_role" "rds" {
-  name               = "AWSServiceRoleForRDS"
-  assume_role_policy = data.aws_iam_policy_document.rds_assume_role.json
-  description = "Allows Amazon RDS to manage AWS resources on your behalf"
-  path               = "/aws-service-role/rds.amazonaws.com/"
-}
-
-resource "aws_iam_role_policy_attachment" "rds" {
-  role       = aws_iam_role.rds.name
-  policy_arn = "arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy"
-}
-
 provider "postgresql" {
   host            = aws_db_instance.default.address
   port            = aws_db_instance.default.port
