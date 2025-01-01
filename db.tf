@@ -60,19 +60,10 @@ resource "postgresql_database" "prod" {
   name = "prod"
 }
 
-import {
-    to = postgresql_database.prod
-    id = "prod"
-}
-
 resource "postgresql_role" "app" {
   login    = true
   name     = var.db_app_username
   password = var.db_app_password
-}
-import {
-    to = postgresql_role.app
-    id = var.db_app_username
 }
 
 resource "postgresql_grant" "create" {

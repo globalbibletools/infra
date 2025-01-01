@@ -152,11 +152,6 @@ resource "aws_route53_record" "interlinear_verification" {
   records    = [each.value.value]
   ttl =30
 }
-import {
-    for_each = {for record in aws_apprunner_custom_domain_association.interlinear.certificate_validation_records: record.name => record}
-    to = aws_route53_record.interlinear_verification[each.key]
-    id = "${aws_route53_zone.main.zone_id}_${each.value.name}_CNAME"
-}
 
 resource "aws_cloudwatch_log_group" "server_application" {
   name = "/aws/apprunner/Platform/${aws_apprunner_service.server.service_id}/application"

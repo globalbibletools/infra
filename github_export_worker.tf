@@ -141,10 +141,6 @@ resource "aws_iam_role" "github_export_schedule" {
   assume_role_policy = data.aws_iam_policy_document.eventbridge_scheduler_assume_role.json
   path               = "/service-role/"
 }
-import {
-    to = aws_iam_role.github_export_schedule
-    id = "github_export_schedule_role"
-}
 
 data "aws_iam_policy_document" "github_export_schedule_role" {
   statement {
@@ -161,18 +157,10 @@ resource "aws_iam_policy" "github_export_schedule_role" {
   policy = data.aws_iam_policy_document.github_export_schedule_role.json
   path   = "/service-role/"
 }
-import {
-    to = aws_iam_policy.github_export_schedule_role
-    id = "arn:aws:iam::188245254368:policy/service-role/Amazon-EventBridge-Scheduler-Execution-Policy-6aa55f83-dbcb-4fc3-b79b-d04acb8720d4"
-}
 
 resource "aws_iam_role_policy_attachment" "github_export_schedule_role" {
   role       = aws_iam_role.github_export_schedule.name
   policy_arn = aws_iam_policy.github_export_schedule_role.arn
-}
-import {
-    to = aws_iam_role_policy_attachment.github_export_schedule_role
-    id = "github_export_schedule_role/arn:aws:iam::188245254368:policy/service-role/Amazon-EventBridge-Scheduler-Execution-Policy-6aa55f83-dbcb-4fc3-b79b-d04acb8720d4"
 }
 
 resource "aws_scheduler_schedule" "github_export" {
@@ -196,9 +184,4 @@ resource "aws_scheduler_schedule" "github_export" {
       maximum_retry_attempts = 0
     }
   }
-}
-
-import {
-    to = aws_scheduler_schedule.github_export
-    id = "default/github_export"
 }

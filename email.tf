@@ -128,15 +128,6 @@ resource "aws_ses_identity_notification_topic" "complaint" {
   identity          = aws_ses_domain_identity.default.domain
 }
 
-import {
-    to = aws_ses_identity_notification_topic.bounce
-    id = "globalbibletools.com|Bounce"
-}
-import {
-    to = aws_ses_identity_notification_topic.complaint
-    id = "globalbibletools.com|Complaint"
-}
-
 locals {
     smtp_url = "smtp://${aws_iam_access_key.smtp_user.id}:${aws_iam_access_key.smtp_user.ses_smtp_password_v4}@email-smtp.us-east-1.amazonaws.com:587"
 }
