@@ -118,3 +118,87 @@ resource "aws_lambda_event_source_mapping" "github_import_sqs_trigger" {
   function_name    = aws_lambda_function.github_import.arn
   batch_size = 1
 }
+
+data "aws_iam_policy_document" "eventbridge_scheduler_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["scheduler.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+    condition {
+        test = "StringEquals"
+        variable = "aws:SourceAccount"
+        values = [data.aws_caller_identity.current.id]
+    }
+  }
+}
+resource "aws_iam_role" "github_export_schedule" {
+  name               = "github_export_schedule_role"
+  assume_role_policy = data.aws_iam_policy_document.eventbridge_scheduler_assume_role.json
+  path               = "/service-role/"
+}
+import {
+    to = aws_iam_role.github_export_schedule
+    id = "github_export_schedule_role"
+}
+
+data "aws_iam_policy_document" "github_export_schedule_role" {
+  statement {
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [
+        "${aws_lambda_function.github_import.arn}:*",
+        aws_lambda_function.github_import.arn,
+    ]
+  }
+}
+resource "aws_iam_policy" "github_export_schedule_role" {
+  name   = "Amazon-EventBridge-Scheduler-Execution-Policy-6aa55f83-dbcb-4fc3-b79b-d04acb8720d4"
+  policy = data.aws_iam_policy_document.github_export_schedule_role.json
+  path   = "/service-role/"
+}
+import {
+    to = aws_iam_policy.github_export_schedule_role
+    id = "arn:aws:iam::188245254368:policy/service-role/Amazon-EventBridge-Scheduler-Execution-Policy-6aa55f83-dbcb-4fc3-b79b-d04acb8720d4"
+}
+
+resource "aws_iam_role_policy_attachment" "github_export_schedule_role" {
+  role       = aws_iam_role.github_export_schedule.name
+  policy_arn = aws_iam_policy.github_export_schedule_role.arn
+}
+import {
+    to = aws_iam_role_policy_attachment.github_export_schedule_role
+    id = "github_export_schedule_role/arn:aws:iam::188245254368:policy/service-role/Amazon-EventBridge-Scheduler-Execution-Policy-6aa55f83-dbcb-4fc3-b79b-d04acb8720d4"
+}
+
+resource "aws_scheduler_schedule" "github_export" {
+  name       = "github_export"
+  group_name = "default"
+  description = "Exports data to GitHub on a weekly basis"
+
+  flexible_time_window {
+      mode = "FLEXIBLE"
+      maximum_window_in_minutes = 30
+  }
+
+  schedule_expression = "cron(0 0 ? * 2 *)"
+  schedule_expression_timezone = "America/Chicago"
+
+  target {
+    arn      = aws_lambda_function.github_import.arn
+    role_arn = aws_iam_role.github_export_schedule.arn
+
+    retry_policy {
+      maximum_retry_attempts = 0
+    }
+  }
+}
+
+import {
+    to = aws_scheduler_schedule.github_export
+    id = "default/github_export"
+}
