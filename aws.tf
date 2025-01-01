@@ -6,10 +6,6 @@ resource "aws_iam_openid_connect_provider" "tfc_provider" {
   client_id_list  = ["aws.workload.identity"]
   thumbprint_list = [data.tls_certificate.tfc_certificate.certificates[0].sha1_fingerprint]
 }
-import {
-    to = aws_iam_openid_connect_provider.tfc_provider
-    id = "arn:aws:iam::188245254368:oidc-provider/app.terraform.io"
-}
 
 data "aws_iam_policy_document" "tfc_assume_role_policy" {
   version = "2012-10-17"
@@ -37,18 +33,10 @@ resource "aws_iam_role" "tfc_role" {
   name               = "tfc-role"
   assume_role_policy = data.aws_iam_policy_document.tfc_assume_role_policy.json
 }
-import {
-    to = aws_iam_role.tfc_role
-    id = "tfc-role"
-}
 
 # Policy for what AWS terraform role has access to
 # TODO: replace with narrow polify
 resource "aws_iam_role_policy_attachment" "tfc_policy_attachment" {
   role       = aws_iam_role.tfc_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-import {
-    to = aws_iam_role_policy_attachment.tfc_policy_attachment
-    id = "tfc-role/arn:aws:iam::aws:policy/AdministratorAccess"
 }
