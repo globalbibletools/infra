@@ -62,3 +62,8 @@ variable "api_user" {
   type        = string
   default     = "app-prod"
 }
+
+variable "terraform_organization" {
+    type = string
+    default = "global-bible-tools"
+}
