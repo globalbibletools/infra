@@ -101,6 +101,63 @@ resource "aws_apprunner_service" "server" {
   }
 }
 
+data "aws_apprunner_hosted_zone_id" "main" {}
+
+resource "aws_apprunner_custom_domain_association" "root" {
+  domain_name = "globalbibletools.com"
+  service_arn = aws_apprunner_service.server.arn
+  enable_www_subdomain = false
+}
+resource "aws_route53_record" "root" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "globalbibletools.com"
+  type    = "A"
+  alias {
+    name = aws_apprunner_custom_domain_association.root.dns_target
+    zone_id = data.aws_apprunner_hosted_zone_id.main.id
+    evaluate_target_health = true
+  }
+}
+resource "aws_route53_record" "root_verification" {
+  for_each = {for record in aws_apprunner_custom_domain_association.root.certificate_validation_records: record.name => record}
+
+  zone_id = aws_route53_zone.main.zone_id
+  name    = each.value.name
+  type    = each.value.type
+  records    = [each.value.value]
+  ttl =30
+}
+
+resource "aws_apprunner_custom_domain_association" "interlinear" {
+  domain_name = "interlinear.globalbibletools.com"
+  service_arn = aws_apprunner_service.server.arn
+  enable_www_subdomain = false
+}
+resource "aws_route53_record" "interlinear" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "interlinear.globalbibletools.com"
+  type    = "A"
+  alias {
+    name = aws_apprunner_custom_domain_association.interlinear.dns_target
+    zone_id = data.aws_apprunner_hosted_zone_id.main.id
+    evaluate_target_health = true
+  }
+}
+resource "aws_route53_record" "interlinear_verification" {
+  for_each = {for record in aws_apprunner_custom_domain_association.interlinear.certificate_validation_records: record.name => record}
+
+  zone_id = aws_route53_zone.main.zone_id
+  name    = each.value.name
+  type    = each.value.type
+  records    = [each.value.value]
+  ttl =30
+}
+import {
+    for_each = {for record in aws_apprunner_custom_domain_association.interlinear.certificate_validation_records: record.name => record}
+    to = aws_route53_record.interlinear_verification[each.key]
+    id = "${aws_route53_zone.main.zone_id}_${each.value.name}_CNAME"
+}
+
 resource "aws_cloudwatch_log_group" "server_application" {
   name = "/aws/apprunner/Platform/${aws_apprunner_service.server.service_id}/application"
 
