@@ -1,4 +1,11 @@
 terraform {
+ cloud {
+    organization = "global-bible-tools"
+    workspaces {
+      name = "production"
+    }
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
