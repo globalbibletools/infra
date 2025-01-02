@@ -1,6 +1,28 @@
 resource "aws_ecr_repository" "import_worker" {
   name = "globalbibletools-import-worker"
 }
+
+data "aws_ecr_lifecycle_policy_document" "import_worker" {
+    rule {
+        priority = 1
+        description = "Removes all but the last three created images"
+
+        selection {
+            tag_status = "any"
+            count_type = "imageCountMoreThan"
+            count_number = 3
+        }
+
+        action {
+            type = "expire"
+        }
+    }
+}
+resource "aws_ecr_lifecycle_policy" "import_worker" {
+    repository = aws_ecr_repository.import_worker.name
+    policy = data.aws_ecr_lifecycle_policy_document.import_worker.json
+}
+
 data "aws_ecr_image" "import_worker_latest" {
   repository_name = aws_ecr_repository.import_worker.name
   image_tag       = "latest"

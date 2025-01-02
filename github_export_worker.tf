@@ -1,6 +1,28 @@
 resource "aws_ecr_repository" "github_export_worker" {
   name = "globalbibletools-github-export-worker"
 }
+
+data "aws_ecr_lifecycle_policy_document" "github_export_worker" {
+    rule {
+        priority = 1
+        description = "Removes all but the last three created images"
+
+        selection {
+            tag_status = "any"
+            count_type = "imageCountMoreThan"
+            count_number = 3
+        }
+
+        action {
+            type = "expire"
+        }
+    }
+}
+resource "aws_ecr_lifecycle_policy" "github_export_worker" {
+    repository = aws_ecr_repository.github_export_worker.name
+    policy = data.aws_ecr_lifecycle_policy_document.github_export_worker.json
+}
+
 data "aws_ecr_image" "github_export_worker_latest" {
   repository_name = aws_ecr_repository.github_export_worker.name
   image_tag       = "latest"
