@@ -2,6 +2,27 @@ resource "aws_ecr_repository" "platform" {
   name = "globalbibletools-platform"
 }
 
+data "aws_ecr_lifecycle_policy_document" "platform" {
+    rule {
+        priority = 1
+        description = "Removes all but the last three created images"
+
+        selection {
+            tag_status = "any"
+            count_type = "imageCountMoreThan"
+            count_number = 3
+        }
+
+        action {
+            type = "expire"
+        }
+    }
+}
+resource "aws_ecr_lifecycle_policy" "platform" {
+    repository = aws_ecr_repository.platform.name
+    policy = data.aws_ecr_lifecycle_policy_document.platform.json
+}
+
 data "aws_iam_policy_document" "app_runner_assume_role" {
   statement {
     effect  = "Allow"
