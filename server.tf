@@ -83,7 +83,7 @@ resource "aws_apprunner_service" "server" {
           DATABASE_URL                 = local.database_url
           EMAIL_FROM                   = "\"Global Bible Tools\" <info@globalbibletools.com>"
           EMAIL_SERVER                 = local.smtp_url
-          GOOGLE_TRANSLATE_CREDENTIALS = var.google_translate_credentials
+          GOOGLE_TRANSLATE_CREDENTIALS = google_service_account_key.default.private_key
           HOSTNAME                     = "0.0.0.0"
           LANGUAGE_IMPORT_QUEUE_URL    = aws_sqs_queue.import.url
           ORIGIN                       = "https://globalbibletools.com"
