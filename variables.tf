@@ -67,3 +67,7 @@ variable "terraform_organization" {
     type = string
     default = "global-bible-tools"
 }
+
+variable "google_project" {
+    type = string
+}
