@@ -58,39 +58,3 @@ resource "google_project_iam_member" "tfc_project_member" {
   member  = "serviceAccount:${google_service_account.tfc_service_account.email}"
 }
 
-import {
-  id = "${var.google_project}/iamcredentials.googleapis.com"
-  to = google_project_service.iam_credentials
-}
-import {
-  id = "${var.google_project}/iam.googleapis.com"
-  to = google_project_service.iam
-}
-import {
-  id = "${var.google_project}/cloudresourcemanager.googleapis.com"
-  to = google_project_service.cloud_resource_manager
-}
-import {
-  id = "${var.google_project}/serviceusage.googleapis.com"
-  to = google_project_service.service_usage
-}
-import {
-    to = google_iam_workload_identity_pool.tfc_pool
-    id = "projects/${var.google_project}/locations/global/workloadIdentityPools/my-tfc-pool"
-}
-import {
-  id = "projects/${var.google_project}/locations/global/workloadIdentityPools/my-tfc-pool/providers/my-tfc-provider-id"
-  to = google_iam_workload_identity_pool_provider.tfc_provider
-}
-import {
-  id = "projects/${var.google_project}/serviceAccounts/tfc-service-account@global-bible-too-1694742039480.iam.gserviceaccount.com"
-  to = google_service_account.tfc_service_account
-}
-import {
-  id = "projects/${var.google_project}/serviceAccounts/tfc-service-account@global-bible-too-1694742039480.iam.gserviceaccount.com roles/iam.workloadIdentityUser principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.tfc_pool.name}/*"
-  to = google_service_account_iam_member.tfc_service_account_member
-}
-import {
-  id = "${var.google_project} roles/owner serviceAccount:${google_service_account.tfc_service_account.email}"
-  to = google_project_iam_member.tfc_project_member
-}
