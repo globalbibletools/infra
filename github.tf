@@ -38,17 +38,18 @@ data "aws_iam_policy_document" "ecr_push" {
     version = "2012-10-17"
 
     statement {
-        sid = "AllowPush"
         effect = "Allow"
           actions = [
-            "ecr-public:BatchCheckLayerAvailability",
-            "ecr-public:CompleteLayerUpload",
-            "ecr-public:InitiateLayerUpload",
-            "ecr-public:PutImage",
-            "ecr-public:UploadLayerPart"
+            "ecr:CompleteLayerUpload",
+            "ecr:GetAuthorizationToken",
+            "ecr:UploadLayerPart",
+            "ecr:InitiateLayerUpload",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:PutImage",
+            "ecr:BatchGetImage"
           ]
           resources = [
-            "arn:aws:ecr-public::${data.aws_caller_identity.current.account_id}:repository/*"
+            "*"
           ]
     }
 }
