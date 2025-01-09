@@ -109,6 +109,7 @@ resource "aws_apprunner_service" "server" {
           LANGUAGE_IMPORT_QUEUE_URL    = aws_sqs_queue.import.url
           ORIGIN                       = "https://globalbibletools.com"
           SECRET_ACCESS_KEY            = aws_iam_access_key.app_prod.secret
+          OPENAI_KEY                   = var.openai_key
         }
       }
       image_identifier      = "${aws_ecr_repository.platform.repository_url}:latest"

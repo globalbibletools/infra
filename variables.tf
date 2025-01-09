@@ -66,3 +66,8 @@ variable "terraform_organization" {
 variable "google_project" {
     type = string
 }
+
+variable "openai_key" {
+    type = string
+    sensitive = true
+}
