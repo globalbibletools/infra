@@ -71,3 +71,7 @@ variable "openai_key" {
     type = string
     sensitive = true
 }
+
+variable "fathom_id" {
+    type = string
+}

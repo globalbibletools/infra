@@ -110,6 +110,7 @@ resource "aws_apprunner_service" "server" {
           ORIGIN                       = "https://globalbibletools.com"
           SECRET_ACCESS_KEY            = aws_iam_access_key.app_prod.secret
           OPENAI_KEY                   = var.openai_key
+          FATHOM_ID                    = var.fathom_id
         }
       }
       image_identifier      = "${aws_ecr_repository.platform.repository_url}:latest"
