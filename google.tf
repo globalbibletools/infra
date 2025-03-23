@@ -6,6 +6,14 @@ resource "aws_route53_record" "google_domain_verification" {
   ttl =30
 }
 
+resource "aws_route53_record" "gmail_mx_record" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "globalbibletools.com"
+  type    = "MX"
+  records    = ["1 SMTP.GOOGLE.COM."]
+  ttl =30
+}
+
 resource "google_project_service" "iam_credentials" {
   service = "iamcredentials.googleapis.com"
 }
