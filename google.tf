@@ -1,3 +1,11 @@
+resource "aws_route53_record" "google_domain_verification" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "globalbibletools.com"
+  type    = "TXT"
+  records    = [var.google_domain_verification]
+  ttl =30
+}
+
 resource "google_project_service" "iam_credentials" {
   service = "iamcredentials.googleapis.com"
 }
