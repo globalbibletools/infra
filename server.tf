@@ -111,6 +111,7 @@ resource "aws_apprunner_service" "server" {
           SECRET_ACCESS_KEY            = aws_iam_access_key.app_prod.secret
           OPENAI_KEY                   = var.openai_key
           FATHOM_ID                    = var.fathom_id
+          JOB_QUEUE_URL                = aws_sqs_queue.jobs.url
         }
       }
       image_identifier      = "${aws_ecr_repository.platform.repository_url}:latest"
