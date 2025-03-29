@@ -62,6 +62,25 @@ resource "aws_sqs_queue" "jobs" {
   visibility_timeout_seconds = 300
 }
 
+resource "aws_sqs_queue" "jobs_dlq" {
+  name                      = "jobs_dlq"
+  message_retention_seconds = 1209600 # 14 days
+
+  redrive_allow_policy = jsonencode({
+    redrivePermission = "byQueue",
+    sourceQueueArns   = [aws_sqs_queue.jobs.arn]
+  })
+}
+
+resource "aws_sqs_queue_redrive_policy" "jobs" {
+  queue_url = aws_sqs_queue.jobs.id
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.jobs_dlq.arn
+    maxReceiveCount     = 1
+  })
+}
+
 data "aws_iam_policy_document" "job_worker" {
   policy_id = "__default_policy_ID"
 
