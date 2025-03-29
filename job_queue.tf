@@ -123,6 +123,8 @@ resource "aws_lambda_function" "job_worker" {
     variables = {
       DATABASE_URL  = local.database_url
       JOB_QUEUE_URL = aws_sqs_queue.jobs.url
+      EMAIL_FROM    = "\"Global Bible Tools\" <info@globalbibletools.com>"
+      EMAIL_SERVER  = local.smtp_url
     }
   }
 }
