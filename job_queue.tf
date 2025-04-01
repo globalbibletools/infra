@@ -26,6 +26,30 @@ data "aws_ecr_image" "job_worker_latest" {
   image_tag       = "latest"
 }
 
+resource "aws_ecr_repository" "job_scheduler" {
+  name = "globalbibletools-job-scheduler"
+}
+data "aws_ecr_lifecycle_policy_document" "job_scheduler" {
+  rule {
+    priority    = 1
+    description = "Removes all but the last three created images"
+
+    selection {
+      tag_status   = "any"
+      count_type   = "imageCountMoreThan"
+      count_number = 3
+    }
+
+    action {
+      type = "expire"
+    }
+  }
+}
+resource "aws_ecr_lifecycle_policy" "job_scheduler" {
+  repository = aws_ecr_repository.job_scheduler.name
+  policy     = data.aws_ecr_lifecycle_policy_document.job_scheduler.json
+}
+
 resource "aws_cloudwatch_log_group" "job_worker_lambda" {
   name = "/aws/lambda/job_worker"
 }
