@@ -26,6 +26,10 @@ resource "google_project_service" "cloud_resource_manager" {
 resource "google_project_service" "service_usage" {
   service = "serviceusage.googleapis.com"
 }
+# For analytics export
+resource "google_project_service" "sheets" {
+  service = "sheets.googleapis.com"
+}
 
 # Creates Google service role that can be assumed by Terraform Cloud
 resource "google_iam_workload_identity_pool" "tfc_pool" {
@@ -74,3 +78,12 @@ resource "google_project_iam_member" "tfc_project_member" {
   member  = "serviceAccount:${google_service_account.tfc_service_account.email}"
 }
 
+# Service user for google apis from app
+resource "google_service_account" "default" {
+  account_id   = "api-prod"
+  display_name = "API Server"
+  description  = "Enables API server to use Google Translate And Google Sheets APIs"
+}
+resource "google_service_account_key" "default" {
+  service_account_id = google_service_account.default.name
+}

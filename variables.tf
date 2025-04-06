@@ -79,3 +79,7 @@ variable "openai_key" {
 variable "fathom_id" {
     type = string
 }
+
+variable "analytics_sheet_id" {
+    type = string
+}

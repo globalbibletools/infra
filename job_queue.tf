@@ -102,7 +102,7 @@ data "aws_iam_policy_document" "job_worker" {
     actions = ["SQS:SendMessage"]
 
     principals {
-      type        = "AWS"
+      type = "AWS"
       identifiers = [
         aws_iam_role.job_worker_lambda.arn,
         aws_iam_role.job_scheduler_lambda.arn,
@@ -144,11 +144,13 @@ resource "aws_lambda_function" "job_worker" {
 
   environment {
     variables = {
-      DATABASE_URL  = local.database_url
-      JOB_QUEUE_URL = aws_sqs_queue.jobs.url
-      EMAIL_FROM    = "\"Global Bible Tools\" <info@globalbibletools.com>"
-      EMAIL_SERVER  = local.smtp_url
-      SERVICE_NAME  = "job-worker"
+      DATABASE_URL                 = local.database_url
+      JOB_QUEUE_URL                = aws_sqs_queue.jobs.url
+      EMAIL_FROM                   = "\"Global Bible Tools\" <info@globalbibletools.com>"
+      EMAIL_SERVER                 = local.smtp_url
+      SERVICE_NAME                 = "job-worker"
+      GOOGLE_TRANSLATE_CREDENTIALS = google_service_account_key.default.private_key
+      ANALYTICS_SPREADSHEET_ID     = var.analytics_sheet_id
     }
   }
 }
