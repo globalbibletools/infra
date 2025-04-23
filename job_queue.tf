@@ -105,7 +105,6 @@ data "aws_iam_policy_document" "job_worker" {
       type = "AWS"
       identifiers = [
         aws_iam_role.job_worker_lambda.arn,
-        aws_iam_role.job_scheduler_lambda.arn,
         aws_iam_user.app_prod.arn
       ]
     }
@@ -158,81 +157,4 @@ resource "aws_lambda_event_source_mapping" "job_worker_sqs_trigger" {
   event_source_arn = aws_sqs_queue.jobs.arn
   function_name    = aws_lambda_function.job_worker.arn
   batch_size       = 1
-}
-
-# Scheduler
-resource "aws_ecr_repository" "job_scheduler" {
-  name = "globalbibletools-job-scheduler"
-}
-data "aws_ecr_lifecycle_policy_document" "job_scheduler" {
-  rule {
-    priority    = 1
-    description = "Removes all but the last three created images"
-
-    selection {
-      tag_status   = "any"
-      count_type   = "imageCountMoreThan"
-      count_number = 3
-    }
-
-    action {
-      type = "expire"
-    }
-  }
-}
-resource "aws_ecr_lifecycle_policy" "job_scheduler" {
-  repository = aws_ecr_repository.job_scheduler.name
-  policy     = data.aws_ecr_lifecycle_policy_document.job_scheduler.json
-}
-data "aws_ecr_image" "job_scheduler_latest" {
-  repository_name = aws_ecr_repository.job_scheduler.name
-  image_tag       = "latest"
-}
-
-resource "aws_cloudwatch_log_group" "job_scheduler_lambda" {
-  name = "/aws/lambda/job_scheduler"
-}
-
-resource "aws_iam_role" "job_scheduler_lambda" {
-  name               = "job_scheduler_lambda_role"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
-  path               = "/service-role/"
-}
-data "aws_iam_policy_document" "job_scheduler_lambda_role" {
-  statement {
-    effect    = "Allow"
-    actions   = ["logs:CreateLogGroup"]
-    resources = ["arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:*"]
-  }
-  statement {
-    effect    = "Allow"
-    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.job_scheduler_lambda.arn}:*"]
-  }
-}
-resource "aws_iam_policy" "job_scheduler_lambda_role" {
-  name   = "AWSLambdaBasicExecutionRole-job-scheduler"
-  policy = data.aws_iam_policy_document.job_scheduler_lambda_role.json
-  path   = "/service-role/"
-}
-resource "aws_iam_role_policy_attachment" "job_scheduler_lambda_role" {
-  role       = aws_iam_role.job_scheduler_lambda.name
-  policy_arn = aws_iam_policy.job_scheduler_lambda_role.arn
-}
-
-resource "aws_lambda_function" "job_scheduler" {
-  function_name = "job_scheduler"
-  role          = aws_iam_role.job_scheduler_lambda.arn
-  package_type  = "Image"
-  image_uri     = data.aws_ecr_image.job_scheduler_latest.image_uri
-  memory_size   = 512
-  timeout       = 300
-
-  environment {
-    variables = {
-      DATABASE_URL  = local.database_url
-      JOB_QUEUE_URL = aws_sqs_queue.jobs.url
-      SERVICE_NAME  = "job-scheduler"
-    }
-  }
 }
