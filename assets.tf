@@ -34,7 +34,7 @@ resource "aws_cloudfront_distribution" "assets" {
   }
 }
 
-resource "aws_route53_record" "assets" {
+resource "aws_route53_record" "assets_ssl" {
   for_each = {
     for dvo in aws_acm_certificate.assets.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
@@ -50,6 +50,10 @@ resource "aws_route53_record" "assets" {
   type            = each.value.type
   zone_id         = aws_route53_zone.main.zone_id
 }
+moved {
+  from = aws_route53_record.assets
+  to = aws_route53_record.assets_ssl
+}
 resource "aws_acm_certificate" "assets" {
   domain_name = "assets.globalbibletools.com"
   validation_method = "DNS"
@@ -60,5 +64,5 @@ resource "aws_acm_certificate" "assets" {
 }
 resource "aws_acm_certificate_validation" "assets" {
   certificate_arn = aws_acm_certificate.assets.arn
-  validation_record_fqdns = [for record in aws_route53_record.assets : record.fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.assets_ssl : record.fqdn]
 }
