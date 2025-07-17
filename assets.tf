@@ -2,21 +2,25 @@ resource "aws_s3_bucket" "gbt_audio" {
   bucket = "gbt-audio"
 }
 
+resource "aws_s3_bucket" "assets" {
+  bucket = "gbt-assets"
+}
+
 resource "aws_cloudfront_distribution" "assets" {
   enabled = true
 
   aliases = ["assets.globalbibletools.com"]
 
   origin {
-    domain_name = aws_s3_bucket.gbt_audio.bucket_regional_domain_name
-    origin_id = "audio"
+    domain_name = aws_s3_bucket.assets.bucket_regional_domain_name
+    origin_id = "assets"
   }
 
   default_cache_behavior {
     allowed_methods = ["HEAD", "OPTIONS", "GET"]
     cached_methods = ["GET", "HEAD"]
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6" // AWS Caching Optimized policy
-    target_origin_id = "audio"
+    target_origin_id = "assets"
     viewer_protocol_policy = "redirect-to-https"
   }
 
