@@ -7,6 +7,25 @@ resource "aws_s3_bucket" "assets" {
   region = "us-east-1"
 }
 
+data "aws_iam_policy_document" "assets_admin_access" {
+  statement {
+    effect = "Allow"
+
+    actions = ["s3:*"]
+
+    resources = [
+      "${aws_s3_bucket.assets.arn}/*"
+    ]
+  }
+}
+resource "aws_iam_policy" "assets_admin_access" {
+  name = "assets_s3_access"
+  path = "/"
+  description = "Gives read/write access to assets S3 bucket"
+
+  policy = data.aws_iam_policy_document.assets_admin_access.json
+}
+
 
 data "aws_iam_policy_document" "assets_cloudfront_access" {
   statement {
