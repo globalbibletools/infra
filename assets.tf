@@ -1,7 +1,3 @@
-resource "aws_s3_bucket" "gbt_audio" {
-  bucket = "gbt-audio"
-}
-
 resource "aws_s3_bucket" "assets" {
   bucket = "gbt-static-assets"
   region = "us-east-1"
