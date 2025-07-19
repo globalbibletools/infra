@@ -71,7 +71,7 @@ resource "aws_cloudfront_distribution" "assets" {
   origin {
     domain_name = aws_s3_bucket.assets.bucket_regional_domain_name
     origin_id = "assets"
-    origin_access_control_id = aws_cloudfront_origin_access_control.assets_bucket.arn
+    origin_access_control_id = aws_cloudfront_origin_access_control.assets_bucket.id
   }
 
   default_cache_behavior {
