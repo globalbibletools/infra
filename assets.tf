@@ -14,7 +14,7 @@ data "aws_iam_policy_document" "assets_admin_access" {
     actions = ["s3:*"]
 
     resources = [
-      "${aws_s3_bucket.assets.arn}/*"
+      "${aws_s3_bucket.assets.arn}/*",
       "${aws_s3_bucket.assets.arn}"
     ]
   }
@@ -55,6 +55,14 @@ resource "aws_s3_bucket_policy" "assets" {
   policy = data.aws_iam_policy_document.assets_cloudfront_access.json
 }
 
+resource "aws_cloudfront_origin_access_control" "assets_bucket" {
+  name = "Assets S3 Bucket Access"
+
+  origin_access_control_origin_type = "s3"
+  signing_behavior = "always"
+  signing_protocol = "sigv4"
+}
+
 resource "aws_cloudfront_distribution" "assets" {
   enabled = true
 
@@ -63,6 +71,7 @@ resource "aws_cloudfront_distribution" "assets" {
   origin {
     domain_name = aws_s3_bucket.assets.bucket_regional_domain_name
     origin_id = "assets"
+    origin_access_control_id = aws_cloudfront_origin_access_control.assets_bucket.arn
   }
 
   default_cache_behavior {
