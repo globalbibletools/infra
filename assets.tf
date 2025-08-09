@@ -14,6 +14,16 @@ data "aws_iam_policy_document" "assets_admin_access" {
       "${aws_s3_bucket.assets.arn}"
     ]
   }
+
+  statement {
+    effect = "Allow"
+
+    actions = ["s3:ListAllMyBuckets"]
+
+    resources = [
+      "*",
+    ]
+  }
 }
 resource "aws_iam_policy" "assets_admin_access" {
   name = "assets_s3_access"
