@@ -9,6 +9,7 @@ data "aws_iam_policy_document" "snapshots_local_access" {
 
     actions = [
         "s3:PutObject",
+        "s3:GetObject",
         "s3:CreateMultipartUpload",
         "s3:UploadPart",
         "s3:CompleteMultipartUpload",
