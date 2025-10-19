@@ -20,6 +20,18 @@ data "aws_iam_policy_document" "snapshots_local_access" {
       "${aws_s3_bucket.snapshots-local.arn}/*",
     ]
   }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+        "s3:ListBucket",
+    ]
+
+    resources = [
+      aws_s3_bucket.snapshots-local.arn,
+    ]
+  }
 }
 
 resource "aws_iam_policy" "snapshots_local_access" {
