@@ -27,6 +27,16 @@ variable "db_app_username" {
   default = "app"
 }
 
+variable "db_adrian_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "db_adrian_username" {
+  type    = string
+  default = "adrian"
+}
+
 variable "db_identifier" {
     type = string
     default = "prod"

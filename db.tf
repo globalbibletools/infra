@@ -74,6 +74,20 @@ resource "postgresql_grant" "create" {
   privileges  = ["CREATE"]
 }
 
+resource "postgresql_role" "adrian" {
+  login    = true
+  name     = var.db_adrian_username
+  password = var.db_adrian_password
+}
+
+resource "postgresql_grant" "create_adrian" {
+  database    = postgresql_database.prod.name
+  role        = postgresql_role.adrian.name
+  schema      = "public"
+  object_type = "database"
+  privileges  = ["CREATE"]
+}
+
 locals {
     database_url = "postgresql://${postgresql_role.app.name}:${postgresql_role.app.password}@${aws_db_instance.default.address}:${aws_db_instance.default.port}/${postgresql_database.prod.name}"
 }
