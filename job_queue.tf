@@ -150,6 +150,7 @@ resource "aws_lambda_function" "job_worker" {
       SERVICE_NAME                 = "job-worker"
       GOOGLE_TRANSLATE_CREDENTIALS = google_service_account_key.default.private_key
       ANALYTICS_SPREADSHEET_ID     = var.analytics_sheet_id
+      BIBLE_SYSTEMS_API_KEY        = var.global_bible_systems_api_key
     }
   }
 }

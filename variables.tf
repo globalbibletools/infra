@@ -93,3 +93,7 @@ variable "fathom_id" {
 variable "analytics_sheet_id" {
     type = string
 }
+
+variable "global_bible_systems_api_key" {
+    type = string
+}

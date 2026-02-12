@@ -112,6 +112,7 @@ resource "aws_apprunner_service" "server" {
           OPENAI_KEY                   = var.openai_key
           FATHOM_ID                    = var.fathom_id
           JOB_QUEUE_URL                = aws_sqs_queue.jobs.url
+          BIBLE_SYSTEMS_API_KEY        = var.global_bible_systems_api_key
         }
       }
       image_identifier      = "${aws_ecr_repository.platform.repository_url}:latest"
