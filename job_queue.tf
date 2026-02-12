@@ -59,7 +59,7 @@ resource "aws_iam_role_policy_attachment" "job_worker_lambda_role" {
 
 resource "aws_sqs_queue" "jobs" {
   name                       = "jobs"
-  visibility_timeout_seconds = 300
+  visibility_timeout_seconds = 600
 }
 
 resource "aws_sqs_queue" "jobs_dlq" {
@@ -139,7 +139,7 @@ resource "aws_lambda_function" "job_worker" {
   package_type  = "Image"
   image_uri     = data.aws_ecr_image.job_worker_latest.image_uri
   memory_size   = 512
-  timeout       = 300
+  timeout       = 600
 
   environment {
     variables = {
