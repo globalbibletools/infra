@@ -53,3 +53,24 @@ resource "aws_scheduler_schedule" "export_analytics_schedule" {
     })
   }
 }
+
+resource "aws_scheduler_schedule" "recompute_book_progress_schedule" {
+  name       = "recompute-book-progress"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "cron(0 6 ? * * *)"
+
+  target {
+    arn      = "arn:aws:scheduler:::aws-sdk:sqs:sendMessage"
+    role_arn = aws_iam_role.scheduled_jobs_role.arn
+    input = jsonencode({
+      QueueUrl = aws_sqs_queue.jobs.url,
+      MessageBody = jsonencode({
+        type = "update_book_completion_progress",
+      })
+    })
+  }
+}
