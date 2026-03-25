@@ -8,7 +8,7 @@ resource "aws_ecr_lifecycle_policy" "platform_beta" {
 }
 
 resource "aws_apprunner_service" "server_beta" {
-  service_name = "Platform - Beta"
+  service_name = "Platform-Beta"
 
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.server.arn
 
