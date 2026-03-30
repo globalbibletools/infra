@@ -111,6 +111,7 @@ resource "aws_apprunner_service" "server" {
           SECRET_ACCESS_KEY            = aws_iam_access_key.app_prod.secret
           OPENAI_KEY                   = var.openai_key
           FATHOM_ID                    = var.fathom_id
+          VITE_FATHOM_ID               = var.fathom_id
           JOB_QUEUE_URL                = aws_sqs_queue.jobs.url
           BIBLE_SYSTEMS_API_KEY        = var.global_bible_systems_api_key
         }
