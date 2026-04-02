@@ -106,7 +106,6 @@ resource "aws_apprunner_service" "server" {
           EMAIL_SERVER                 = local.smtp_url
           GOOGLE_TRANSLATE_CREDENTIALS = google_service_account_key.default.private_key
           HOSTNAME                     = "0.0.0.0"
-          LANGUAGE_IMPORT_QUEUE_URL    = aws_sqs_queue.import.url
           ORIGIN                       = "https://globalbibletools.com"
           SECRET_ACCESS_KEY            = aws_iam_access_key.app_prod.secret
           OPENAI_KEY                   = var.openai_key
