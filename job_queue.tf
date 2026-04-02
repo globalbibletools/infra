@@ -151,6 +151,10 @@ resource "aws_lambda_function" "job_worker" {
       GOOGLE_TRANSLATE_CREDENTIALS = google_service_account_key.default.private_key
       ANALYTICS_SPREADSHEET_ID     = var.analytics_sheet_id
       BIBLE_SYSTEMS_API_KEY        = var.global_bible_systems_api_key
+      GITHUB_TOKEN                 = var.github_token
+      GITHUB_EXPORT_OWNER          = "globalbibletools"
+      GITHUB_EXPORT_REPO           = "data"
+      GITHUB_EXPORT_BRANCH         = "main"
     }
   }
 }
