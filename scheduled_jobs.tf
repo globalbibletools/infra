@@ -74,3 +74,30 @@ resource "aws_scheduler_schedule" "recompute_book_progress_schedule" {
     })
   }
 }
+
+resource "aws_scheduler_schedule" "queue_github_export_run_schedule" {
+  name       = "github-export"
+  group_name = "default"
+  description = "Exports data to GitHub on a weekly basis"
+
+  flexible_time_window {
+      mode = "FLEXIBLE"
+      maximum_window_in_minutes = 30
+  }
+
+  schedule_expression = "cron(0 0 ? * 2 *)"
+
+  target {
+    arn      = "arn:aws:scheduler:::aws-sdk:sqs:sendMessage"
+    role_arn = aws_iam_role.scheduled_jobs_role.arn
+    input = jsonencode({
+      QueueUrl = aws_sqs_queue.jobs.url,
+      MessageBody = jsonencode({
+        type = "export_glosses",
+        payload = {
+          windowDays = 8
+        }
+      })
+    })
+  }
+}
