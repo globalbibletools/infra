@@ -92,3 +92,70 @@ resource "postgresql_grant" "create_adrian" {
 locals {
     database_url = "postgresql://${postgresql_role.app.name}:${postgresql_role.app.password}@${aws_db_instance.default.address}:${aws_db_instance.default.port}/${postgresql_database.prod.name}"
 }
+
+# Backup
+resource "aws_backup_vault" "rds" {
+  name        = "rds_backup_vault"
+}
+
+resource "aws_backup_plan" "rds" {
+  name = "rds-backup"
+
+  rule {
+    rule_name         = "daily"
+    target_vault_name = aws_backup_vault.rds.name
+    schedule          = "cron(30 6 * * ? *)" # 6:30 AM UTC
+    lifecycle {
+      delete_after = 7
+    }
+  }
+
+  rule {
+    rule_name         = "weekly"
+    target_vault_name = aws_backup_vault.rds.name
+    schedule          = "cron(0 7 ? * 2 *)" # 7 AM UTC every Monday
+    lifecycle {
+      delete_after = 6
+    }
+  }
+
+  rule {
+    rule_name         = "monthly"
+    target_vault_name = aws_backup_vault.rds.name
+    schedule          = "cron(30 7 1 * ? *)" # 7:30 AM UTC first of the month
+    lifecycle {
+      delete_after = 8 
+    }
+  }
+}
+
+data "aws_iam_policy_document" "backup_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["backup.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+resource "aws_iam_role" "backup" {
+  name               = "backup"
+  assume_role_policy = data.aws_iam_policy_document.backup_assume_role.json
+}
+resource "aws_iam_role_policy_attachment" "backup" {
+  role       = aws_iam_role.backup.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+}
+
+resource "aws_backup_selection" "rds" {
+  name          = "rds-backup"
+  plan_id = aws_backup_plan.rds.id
+  iam_role_arn = aws_iam_role.backup.arn
+
+  resources = [
+    aws_db_instance.default.arn
+  ]
+}
