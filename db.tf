@@ -41,6 +41,7 @@ resource "aws_db_instance" "default" {
   password            = var.db_master_password
   username            = var.db_master_username
   deletion_protection = true
+  backup_retention_period = 7
   enabled_cloudwatch_logs_exports = [
     "postgresql"
   ]
