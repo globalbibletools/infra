@@ -1,3 +1,15 @@
+data "aws_rds_reserved_instance_offering" "default" {
+  db_instance_class   = "db.t4g.medium"
+  duration            = 1
+  multi_az            = false
+  offering_type       = "Partial Upfront"
+  product_description = "postgresql"
+}
+resource "aws_rds_reserved_instance" "example" {
+  offering_id    = data.aws_rds_reserved_instance_offering.default.offering_id
+  instance_count = 1
+}
+
 data "aws_rds_engine_version" "postgres" {
   engine = "postgres"
   parameter_group_family = "postgres14"
