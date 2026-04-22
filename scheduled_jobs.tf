@@ -75,6 +75,27 @@ resource "aws_scheduler_schedule" "recompute_book_progress_schedule" {
   }
 }
 
+resource "aws_scheduler_schedule" "sync_ai_gloss_languages" {
+  name       = "sync-ai-gloss-languages"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "cron(0 7 ? * * *)"
+
+  target {
+    arn      = "arn:aws:scheduler:::aws-sdk:sqs:sendMessage"
+    role_arn = aws_iam_role.scheduled_jobs_role.arn
+    input = jsonencode({
+      QueueUrl = aws_sqs_queue.jobs.url,
+      MessageBody = jsonencode({
+        type = "sync_ai_gloss_languages",
+      })
+    })
+  }
+}
+
 resource "aws_scheduler_schedule" "queue_github_export_run_schedule" {
   name       = "github-export"
   group_name = "default"
