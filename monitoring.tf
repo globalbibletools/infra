@@ -7,7 +7,7 @@ resource "aws_cloudwatch_log_metric_filter" "job_failed" {
   name           = "job-failed-filter"
   log_group_name = aws_cloudwatch_log_group.job_worker_lambda.name
 
-  pattern = "\"msg\":\"Job failed\""
+  pattern = "{ $.msg = \"Job failed\" }"
 
   metric_transformation {
     name      = local.handled_failure_count_metric
