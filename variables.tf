@@ -97,3 +97,7 @@ variable "analytics_sheet_id" {
 variable "global_bible_systems_api_key" {
     type = string
 }
+
+variable "job_queue_heavy_image" {
+    type = string
+}

@@ -32,7 +32,7 @@ resource "aws_sqs_queue" "jobs_heavy_dlq" {
   message_retention_seconds = 1209600 # 14 days
 
   redrive_allow_policy = jsonencode({
-    redrivePermission = "byqueue",
+    redrivePermission = "byQueue",
     sourceQueueArns   = [aws_sqs_queue.jobs_heavy.arn]
   })
 }
@@ -67,4 +67,62 @@ resource "aws_iam_role" "job_queue_heavy_ecs_execution" {
 resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   role       = aws_iam_role.job_queue_heavy_ecs_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+
+resource "aws_iam_role" "job_queue_heavy_ecs_task" {
+  name = "heavy-job-worker-task-role"
+
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_assume_role.json
+}
+data "aws_iam_policy_document" "job_worker_heavy" {
+  policy_id = "__default_policy_ID"
+
+  statement {
+    sid     = "__owner_statement"
+    effect  = "Allow"
+    actions = ["SQS:*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+    resources = [aws_sqs_queue.jobs_heavy.arn]
+  }
+
+  statement {
+    sid     = "__sender_statement"
+    effect  = "Allow"
+    actions = ["SQS:SendMessage"]
+
+    principals {
+      type = "AWS"
+      identifiers = [
+        aws_iam_role.job_queue_heavy_ecs_task.arn,
+        aws_iam_user.app_prod.arn
+      ]
+    }
+    resources = [aws_sqs_queue.jobs_heavy.arn]
+  }
+
+  statement {
+    sid    = "__receiver_statement"
+    effect = "Allow"
+    actions = [
+      "SQS:ChangeMessageVisibility",
+      "SQS:DeleteMessage",
+      "SQS:ReceiveMessage",
+      "sqs:GetQueueAttributes"
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.job_queue_heavy_ecs_task.arn]
+    }
+    resources = [aws_sqs_queue.jobs_heavy.arn]
+  }
+}
+resource "aws_sqs_queue_policy" "job_worker_heavy" {
+  queue_url = aws_sqs_queue.jobs_heavy.id
+  policy    = data.aws_iam_policy_document.job_worker_heavy.json
 }
