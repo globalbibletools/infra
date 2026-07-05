@@ -98,6 +98,6 @@ variable "global_bible_systems_api_key" {
     type = string
 }
 
-variable "job_queue_heavy_image" {
+variable "job_worker_heavy_image" {
     type = string
 }
