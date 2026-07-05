@@ -128,7 +128,7 @@ resource "aws_sqs_queue_policy" "job_worker_heavy" {
 }
 
 resource "aws_ecs_task_definition" "job_worker_heavy" {
-  family                   = "worker"
+  family                   = "job_worker_heavy"
   requires_compatibilities = ["FARGATE"]
 
   network_mode = "awsvpc"
