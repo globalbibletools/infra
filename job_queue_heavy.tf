@@ -156,7 +156,8 @@ resource "aws_ecs_task_definition" "job_worker_heavy" {
         logDriver = "awslogs"
 
         options = {
-          awslogs-group         = aws_cloudwatch_log_group.job_worker_heavy_ecs.name
+          awslogs-group  = aws_cloudwatch_log_group.job_worker_heavy_ecs.name
+          awslogs-region = "us-east-1"
         }
       }
 
