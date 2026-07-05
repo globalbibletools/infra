@@ -224,3 +224,30 @@ resource "aws_ecs_task_definition" "job_worker_heavy" {
   ])
 }
 
+resource "aws_ecs_cluster" "job_worker_heavy" {
+  name = "job-worker-heavy"
+}
+
+resource "aws_ecs_service" "job_worker_heavy" {
+  name            = "worker"
+  cluster         = aws_ecs_cluster.job_worker_heavy.id
+  task_definition = aws_ecs_task_definition.job_worker_heavy.arn
+
+  desired_count = 0
+
+  launch_type = "FARGATE"
+
+  platform_version = "LATEST"
+
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
+
+  enable_execute_command = false
+
+  network_configuration {
+    subnets         = data.aws_subnets.default.ids
+    security_groups = [aws_security_group.egress_only]
+
+    assign_public_ip = true
+  }
+}
