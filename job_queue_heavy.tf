@@ -296,3 +296,70 @@ resource "aws_appautoscaling_policy" "job_worker_heavy_scale_down" {
     }
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "job_queue_heavy_has_messages" {
+  alarm_name          = "job-queue-heavy-has-messages"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  threshold           = 1
+  evaluation_periods  = 1
+  period              = 60
+
+  namespace   = "AWS/SQS"
+  metric_name = "ApproximateNumberOfMessagesVisible"
+
+  dimensions = {
+    QueueName = aws_sqs_queue.job_worker_heavy.name
+  }
+
+  alarm_actions = [aws_appautoscaling_policy.job_worker_heavy_scale_up.arn]
+}
+resource "aws_cloudwatch_metric_alarm" "job_queue_heavy_idle" {
+  alarm_name          = "job-queue-heavy-idle"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  threshold           = 0
+
+  evaluation_periods = 20
+  period             = 60
+
+  treat_missing_data = "notBreaching"
+
+  metric_query {
+    id = "m1"
+
+    metric {
+      namespace   = "AWS/SQS"
+      metric_name = "ApproximateNumberOfMessagesVisible"
+
+      dimensions = {
+        QueueName = aws_sqs_queue.jobs_heavy.name
+      }
+
+      period = 60
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "m2"
+
+    metric {
+      namespace   = "AWS/SQS"
+      metric_name = "ApproximateNumberOfMessagesNotVisible"
+
+      dimensions = {
+        QueueName = aws_sqs_queue.jobs_heavy.name
+      }
+
+      period = 60
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "e1"
+    expression  = "m1 + m2"
+    return_data = true
+  }
+
+  alarm_actions = [aws_appautoscaling_policy.job_worker_heavy_scale_down.arn]
+}
