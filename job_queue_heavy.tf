@@ -126,3 +126,99 @@ resource "aws_sqs_queue_policy" "job_worker_heavy" {
   queue_url = aws_sqs_queue.jobs_heavy.id
   policy    = data.aws_iam_policy_document.job_worker_heavy.json
 }
+
+resource "aws_ecs_task_definition" "job_worker_heavy" {
+  family                   = "worker"
+  requires_compatibilities = ["FARGATE"]
+
+  network_mode = "awsvpc"
+
+  cpu    = 1024
+  memory = 2048
+
+  execution_role_arn = aws_iam_role.job_queue_heavy_ecs_execution.arn
+  task_role_arn      = aws_iam_role.job_queue_heavy_ecs_task.arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
+
+  container_definitions = jsonencode([
+    {
+      name      = "worker"
+      image     = var.job_worker_heavy_image
+      essential = true
+
+      stopTimeout = 120
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.job_worker_heavy_ecs.name
+        }
+      }
+
+      environment = [
+        {
+          name  = "NODE_ENV"
+          value = "production"
+        },
+        {
+          name  = "WORKER_CONCURRENCY"
+          value = "3"
+        }
+        {
+          name = "DATABASE_URL"
+          value = local.database_url
+        }
+        {
+          name = "JOB_QUEUE_HEAVY_URL"
+          value = aws_sqs_queue.jobs_heavy.url
+        }
+        {
+          name = "EMAIL_FROM"
+          value = "\"Global Bible Tools\" <info@globalbibletools.com>"
+        }
+        {
+          name = "EMAIL_SERVER"
+          value = local.smtp_url
+        }
+        {
+          name = "SERVICE_NAME"
+          value = "job-worker-heavy"
+        }
+        {
+          name = "GOOGLE_TRANSLATE_CREDENTIALS"
+          value = google_service_account_key.default.private_key
+        }
+        {
+          name = "ANALYTICS_SPREADSHEET_ID"
+          value = var.analytics_sheet_id
+        }
+        {
+          name = "BIBLE_SYSTEMS_API_KEY"
+          value = var.global_bible_systems_api_key
+        }
+        {
+          name = "GITHUB_TOKEN"
+          value = var.github_token
+        }
+        {
+          name = "GITHUB_EXPORT_OWNER"
+          value = "globalbibletools"
+        }
+        {
+          name = "GITHUB_EXPORT_REPO"
+          value = "data"
+        }
+        {
+          name = "GITHUB_EXPORT_BRANCH"
+          value = "main"
+        }
+      ]
+    }
+  ])
+}
+
