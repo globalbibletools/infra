@@ -246,7 +246,7 @@ resource "aws_ecs_service" "job_worker_heavy" {
 
   network_configuration {
     subnets         = data.aws_subnets.default.ids
-    security_groups = [aws_security_group.egress_only.arn]
+    security_groups = [aws_security_group.egress_only.id]
 
     assign_public_ip = true
   }
