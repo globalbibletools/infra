@@ -306,6 +306,7 @@ resource "aws_cloudwatch_metric_alarm" "job_queue_heavy_has_messages" {
 
   namespace   = "AWS/SQS"
   metric_name = "ApproximateNumberOfMessagesVisible"
+  statistic   = "Maximum"
 
   dimensions = {
     QueueName = aws_sqs_queue.jobs_heavy.name
