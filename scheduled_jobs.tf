@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "scheduled_jobs_role" {
     effect  = "Allow"
     actions = ["SQS:SendMessage"]
 
-    resources = [aws_sqs_queue.jobs.arn]
+    resources = [aws_sqs_queue.jobs_light.arn]
   }
 }
 resource "aws_iam_policy" "scheduled_jobs_role_queue" {
@@ -46,7 +46,7 @@ resource "aws_scheduler_schedule" "export_analytics_schedule" {
     arn      = "arn:aws:scheduler:::aws-sdk:sqs:sendMessage"
     role_arn = aws_iam_role.scheduled_jobs_role.arn
     input = jsonencode({
-      QueueUrl = aws_sqs_queue.jobs.url,
+      QueueUrl = aws_sqs_queue.jobs_light.url,
       MessageBody = jsonencode({
         type = "export_analytics",
       })
@@ -67,7 +67,7 @@ resource "aws_scheduler_schedule" "recompute_book_progress_schedule" {
     arn      = "arn:aws:scheduler:::aws-sdk:sqs:sendMessage"
     role_arn = aws_iam_role.scheduled_jobs_role.arn
     input = jsonencode({
-      QueueUrl = aws_sqs_queue.jobs.url,
+      QueueUrl = aws_sqs_queue.jobs_light.url,
       MessageBody = jsonencode({
         type = "update_book_completion_progress",
       })
@@ -88,7 +88,7 @@ resource "aws_scheduler_schedule" "sync_ai_gloss_languages" {
     arn      = "arn:aws:scheduler:::aws-sdk:sqs:sendMessage"
     role_arn = aws_iam_role.scheduled_jobs_role.arn
     input = jsonencode({
-      QueueUrl = aws_sqs_queue.jobs.url,
+      QueueUrl = aws_sqs_queue.jobs_light.url,
       MessageBody = jsonencode({
         type = "sync_ai_gloss_languages",
       })
@@ -112,7 +112,7 @@ resource "aws_scheduler_schedule" "queue_github_export_run_schedule" {
     arn      = "arn:aws:scheduler:::aws-sdk:sqs:sendMessage"
     role_arn = aws_iam_role.scheduled_jobs_role.arn
     input = jsonencode({
-      QueueUrl = aws_sqs_queue.jobs.url,
+      QueueUrl = aws_sqs_queue.jobs_light.url,
       MessageBody = jsonencode({
         type = "export_glosses",
         payload = {
