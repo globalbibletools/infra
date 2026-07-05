@@ -251,3 +251,48 @@ resource "aws_ecs_service" "job_worker_heavy" {
     assign_public_ip = true
   }
 }
+
+resource "aws_appautoscaling_target" "job_worker_heavy" {
+  service_namespace  = "ecs"
+  scalable_dimension = "ecs:service:DesiredCount"
+
+  resource_id = "service/${aws_ecs_cluster.job_worker_heavy.name}/${aws_ecs_service.job_worker_heavy.name}"
+
+  min_capacity = 0
+  max_capacity = 1
+}
+resource "aws_appautoscaling_policy" "job_worker_heavy_scale_up" {
+  name               = "job-worker-heavy-scale-up"
+  service_namespace  = aws_appautoscaling_target.job_worker_heavy.service_namespace
+  scalable_dimension = aws_appautoscaling_target.job_worker_heavy.scalable_dimension
+  resource_id        = aws_appautoscaling_target.job_worker_heavy.resource_id
+
+  policy_type = "StepScaling"
+
+  step_scaling_policy_configuration {
+    adjustment_type = "ExactCapacity"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+  }
+}
+resource "aws_appautoscaling_policy" "job_worker_heavy_scale_down" {
+  name              = "job-worker-heavy-scale-down"
+  service_namespace = aws_appautoscaling_target.job_worker_heavy.service_namespace
+
+  scalable_dimension = aws_appautoscaling_target.job_worker_heavy.scalable_dimension
+  resource_id        = aws_appautoscaling_target.job_worker_heavy.resource_id
+
+  policy_type = "StepScaling"
+
+  step_scaling_policy_configuration {
+    adjustment_type = "ExactCapacity"
+
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = 0
+    }
+  }
+}
