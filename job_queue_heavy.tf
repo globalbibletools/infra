@@ -308,7 +308,7 @@ resource "aws_cloudwatch_metric_alarm" "job_queue_heavy_has_messages" {
   metric_name = "ApproximateNumberOfMessagesVisible"
 
   dimensions = {
-    QueueName = aws_sqs_queue.job_worker_heavy.name
+    QueueName = aws_sqs_queue.jobs_heavy.name
   }
 
   alarm_actions = [aws_appautoscaling_policy.job_worker_heavy_scale_up.arn]
@@ -319,7 +319,6 @@ resource "aws_cloudwatch_metric_alarm" "job_queue_heavy_idle" {
   threshold           = 0
 
   evaluation_periods = 20
-  period             = 60
 
   treat_missing_data = "notBreaching"
 
