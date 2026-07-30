@@ -33,6 +33,40 @@ resource "aws_iam_policy" "assets_admin_access" {
   policy = data.aws_iam_policy_document.assets_admin_access.json
 }
 
+data "aws_iam_policy_document" "assets_upload_access" {
+  statement {
+    sid    = "ListBucket"
+    effect = "Allow"
+
+    actions = ["s3:ListBucket"]
+
+    resources = [aws_s3_bucket.assets.arn]
+  }
+
+  statement {
+    sid    = "UploadObjects"
+    effect = "Allow"
+
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:AbortMultipartUpload",
+      "s3:ListBucketMultipartUploads",
+      "s3:ListMultipartUploadParts",
+    ]
+
+    resources = ["${aws_s3_bucket.assets.arn}/*"]
+  }
+}
+
+resource "aws_iam_policy" "assets_upload_access" {
+  name        = "assets_s3_upload_access"
+  path        = "/"
+  description = "Allows uploading objects to the static assets S3 bucket"
+
+  policy = data.aws_iam_policy_document.assets_upload_access.json
+}
+
 
 data "aws_iam_policy_document" "assets_cloudfront_access" {
   statement {

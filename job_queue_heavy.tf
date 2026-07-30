@@ -69,6 +69,11 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_iam_role_policy_attachment" "job_worker_heavy_assets_upload" {
+  role       = aws_iam_role.job_queue_heavy_ecs_task.name
+  policy_arn = aws_iam_policy.assets_upload_access.arn
+}
+
 
 resource "aws_iam_role" "job_queue_heavy_ecs_task" {
   name = "heavy-job-worker-task-role"
