@@ -103,6 +103,77 @@ resource "aws_cloudfront_origin_access_control" "assets_bucket" {
   signing_protocol = "sigv4"
 }
 
+resource "aws_cloudfront_cache_policy" "manifest" {
+  name = "manifest-short-ttl"
+  comment = "Short TTL (300s) for manifest.jsonl files under /glosses and /audio"
+  min_ttl = 0
+  default_ttl = 300
+  max_ttl = 300
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+
+    headers_config {
+      header_behavior = "none"
+    }
+
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
+resource "aws_cloudfront_cache_policy" "assets_long" {
+  name = "assets-long-ttl"
+  comment = "Long TTL for static assets"
+  min_ttl = 31536000
+  default_ttl = 31536000
+  max_ttl = 31536000
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+
+    headers_config {
+      header_behavior = "none"
+    }
+
+    query_strings_config {
+      query_string_behavior = "whitelist"
+      query_strings {
+        items = ["v"]
+      }
+    }
+  }
+}
+
+resource "aws_cloudfront_response_headers_policy" "manifest" {
+  name = "manifest-cache-control"
+
+  custom_headers_config {
+    items {
+      header = "Cache-Control"
+      value = "max-age=300, must-revalidate"
+      override = true
+    }
+  }
+}
+
+resource "aws_cloudfront_response_headers_policy" "assets_long" {
+  name = "assets-long-cache-control"
+
+  custom_headers_config {
+    items {
+      header = "Cache-Control"
+      value = "public, max-age=31536000, immutable"
+      override = true
+    }
+  }
+}
+
 resource "aws_cloudfront_distribution" "assets" {
   enabled = true
 
@@ -118,6 +189,36 @@ resource "aws_cloudfront_distribution" "assets" {
     allowed_methods = ["HEAD", "OPTIONS", "GET"]
     cached_methods = ["GET", "HEAD"]
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6" // AWS Caching Optimized policy
+    target_origin_id = "assets"
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  ordered_cache_behavior {
+    path_pattern = "/*/manifest.jsonl"
+    allowed_methods = ["HEAD", "OPTIONS", "GET"]
+    cached_methods = ["GET", "HEAD"]
+    cache_policy_id = aws_cloudfront_cache_policy.manifest.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.manifest.id
+    target_origin_id = "assets"
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  ordered_cache_behavior {
+    path_pattern = "/glosses/*"
+    allowed_methods = ["HEAD", "OPTIONS", "GET"]
+    cached_methods = ["GET", "HEAD"]
+    cache_policy_id = aws_cloudfront_cache_policy.assets_long.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.assets_long.id
+    target_origin_id = "assets"
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  ordered_cache_behavior {
+    path_pattern = "/audio/*"
+    allowed_methods = ["HEAD", "OPTIONS", "GET"]
+    cached_methods = ["GET", "HEAD"]
+    cache_policy_id = aws_cloudfront_cache_policy.assets_long.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.assets_long.id
     target_origin_id = "assets"
     viewer_protocol_policy = "redirect-to-https"
   }
