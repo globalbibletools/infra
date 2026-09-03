@@ -152,7 +152,7 @@ resource "aws_ecs_task_definition" "job_worker_heavy" {
   container_definitions = jsonencode([
     {
       name      = "worker"
-      image     = var.job_worker_heavy_image
+      image     = "${aws_ecr_repository.job_worker_heavy.repository_url}:latest"
       essential = true
 
       stopTimeout = 120

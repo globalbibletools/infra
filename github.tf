@@ -77,3 +77,23 @@ resource "aws_iam_role_policy" "github_role_lambda" {
   role = aws_iam_role.github.id
   policy = data.aws_iam_policy_document.lambda_deploy.json
 }
+
+data "aws_iam_policy_document" "ecs_deploy" {
+    version = "2012-10-17"
+
+    statement {
+        effect = "Allow"
+          actions = [
+            "ecs:UpdateService",
+            "ecs:DescribeServices"
+          ]
+          resources = [
+            aws_ecs_service.job_worker_heavy.id
+          ]
+    }
+}
+resource "aws_iam_role_policy" "github_role_ecs" {
+  name = "ecs_deploy"
+  role = aws_iam_role.github.id
+  policy = data.aws_iam_policy_document.ecs_deploy.json
+}
