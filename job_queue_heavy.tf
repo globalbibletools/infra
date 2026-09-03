@@ -80,6 +80,27 @@ resource "aws_iam_role" "job_queue_heavy_ecs_task" {
 
   assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_assume_role.json
 }
+data "aws_iam_policy_document" "job_worker_heavy_task_protection" {
+  statement {
+    sid    = "TaskScaleInProtection"
+    effect = "Allow"
+
+    actions = [
+      "ecs:GetTaskProtection",
+      "ecs:UpdateTaskProtection",
+    ]
+
+    resources = [
+      "arn:aws:ecs:us-east-1:${data.aws_caller_identity.current.account_id}:task/${aws_ecs_cluster.job_worker_heavy.name}/*",
+    ]
+  }
+}
+resource "aws_iam_role_policy" "job_worker_heavy_task_protection" {
+  name   = "task-scale-in-protection"
+  role   = aws_iam_role.job_queue_heavy_ecs_task.id
+  policy = data.aws_iam_policy_document.job_worker_heavy_task_protection.json
+}
+
 data "aws_iam_policy_document" "job_worker_heavy" {
   policy_id = "__default_policy_ID"
 
@@ -125,25 +146,6 @@ data "aws_iam_policy_document" "job_worker_heavy" {
       identifiers = [aws_iam_role.job_queue_heavy_ecs_task.arn]
     }
     resources = [aws_sqs_queue.jobs_heavy.arn]
-  }
-
-  statement {
-    sid    = "TaskScaleInProtection"
-    effect = "Allow"
-
-    actions = [
-      "ecs:GetTaskProtection",
-      "ecs:UpdateTaskProtection",
-    ]
-
-    resources = [
-      "arn:aws:ecs:us-east-1:${data.aws_caller_identity.current.account_id}:task/${aws_ecs_cluster.job_worker_heavy.name}/*",
-    ]
-
-    principals {
-      type        = "AWS"
-      identifiers = [aws_iam_role.job_queue_heavy_ecs_task.arn]
-    }
   }
 }
 resource "aws_sqs_queue_policy" "job_worker_heavy" {
