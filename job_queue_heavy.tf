@@ -126,6 +126,25 @@ data "aws_iam_policy_document" "job_worker_heavy" {
     }
     resources = [aws_sqs_queue.jobs_heavy.arn]
   }
+
+  statement {
+    sid    = "TaskScaleInProtection"
+    effect = "Allow"
+
+    actions = [
+      "ecs:GetTaskProtection",
+      "ecs:UpdateTaskProtection",
+    ]
+
+    resources = [
+      "arn:aws:ecs:us-east-1:${data.aws_caller_identity.current.account_id}:task/${aws_ecs_cluster.job_worker_heavy.name}/*",
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.job_queue_heavy_ecs_task.arn]
+    }
+  }
 }
 resource "aws_sqs_queue_policy" "job_worker_heavy" {
   queue_url = aws_sqs_queue.jobs_heavy.id
