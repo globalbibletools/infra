@@ -259,6 +259,12 @@ resource "aws_ecs_service" "job_worker_heavy" {
   cluster         = aws_ecs_cluster.job_worker_heavy.id
   task_definition = aws_ecs_task_definition.job_worker_heavy.arn
 
+  # The platform repo's deploy workflow registers new revisions of this task
+  # definition family with the sha-tagged image and points the service at them.
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
+
   desired_count = 0
 
   launch_type = "FARGATE"
