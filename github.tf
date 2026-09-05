@@ -115,7 +115,7 @@ data "aws_iam_policy_document" "ecs_deploy" {
           condition {
             test     = "StringEquals"
             variable = "iam:PassedToService"
-            values   = ["ecs.amazonaws.com"]
+            values   = ["ecs.amazonaws.com", "ecs-tasks.amazonaws.com"]
           }
     }
 }
