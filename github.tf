@@ -91,6 +91,17 @@ data "aws_iam_policy_document" "ecs_deploy" {
             aws_ecs_service.job_worker_heavy.id
           ]
     }
+
+    statement {
+        effect = "Allow"
+          actions = [
+            "ecs:DescribeTaskDefinition",
+            "ecs:RegisterTaskDefinition"
+          ]
+          resources = [
+            "*"
+          ]
+    }
 }
 resource "aws_iam_role_policy" "github_role_ecs" {
   name = "ecs_deploy"
