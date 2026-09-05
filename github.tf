@@ -102,6 +102,22 @@ data "aws_iam_policy_document" "ecs_deploy" {
             "*"
           ]
     }
+
+    statement {
+        effect = "Allow"
+          actions = [
+            "iam:PassRole"
+          ]
+          resources = [
+            aws_iam_role.job_queue_heavy_ecs_task.arn,
+            aws_iam_role.job_queue_heavy_ecs_execution.arn
+          ]
+          condition {
+            test     = "StringEquals"
+            variable = "iam:PassedToService"
+            values   = ["ecs.amazonaws.com"]
+          }
+    }
 }
 resource "aws_iam_role_policy" "github_role_ecs" {
   name = "ecs_deploy"
