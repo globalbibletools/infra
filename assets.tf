@@ -204,6 +204,16 @@ resource "aws_cloudfront_distribution" "assets" {
   }
 
   ordered_cache_behavior {
+    path_pattern = "/languages.jsonl"
+    allowed_methods = ["HEAD", "OPTIONS", "GET"]
+    cached_methods = ["GET", "HEAD"]
+    cache_policy_id = aws_cloudfront_cache_policy.manifest.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.manifest.id
+    target_origin_id = "assets"
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  ordered_cache_behavior {
     path_pattern = "/glosses/*"
     allowed_methods = ["HEAD", "OPTIONS", "GET"]
     cached_methods = ["GET", "HEAD"]
