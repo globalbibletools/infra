@@ -89,6 +89,26 @@ data "aws_iam_policy_document" "assets_cloudfront_access" {
       values = [aws_cloudfront_distribution.assets.arn]
     }
   }
+
+  statement {
+    sid    = "ListBucket"
+    effect = "Allow"
+
+    principals {
+      type = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    actions = ["s3:ListBucket"]
+
+    resources = [aws_s3_bucket.assets.arn]
+
+    condition {
+      test = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [aws_cloudfront_distribution.assets.arn]
+    }
+  }
 }
 resource "aws_s3_bucket_policy" "assets" {
   bucket = aws_s3_bucket.assets.id
